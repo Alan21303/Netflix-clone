@@ -1,4 +1,4 @@
-```markdown
+
 # Netflix Clone
 
 A Netflix clone web application mimicking the interface and features of Netflix. Built using HTML, CSS, JavaScript, Django, and PostgreSQL.

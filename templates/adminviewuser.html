@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management Dashboard</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .user-card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            background: #404040;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .user-info {
+            margin-bottom: 1rem;
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-meta {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-view {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-suspend {
+            background: #f44336;
+            color: white;
+        }
+
+        .nav {
+            background: #2c2c2c;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #2c2c2c;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .search-bar {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: #2c2c2c;
+            color: white;
+        }
+
+        .messages {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .message-error {
+            background: #f44336;
+            color: white;
+        }
+
+        .message-success {
+            background: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <h1>User Management</h1>
+        <div class="nav-links">
+            <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+            <a href="{% url 'user_management' %}">Users</a>
+            <a href="{% url 'admin_settings' %}">Settings</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {% if message.tags %}message-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Statistics Overview -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ active_users }}</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ new_users }}</div>
+                <div class="stat-label">New Users (This Month)</div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" placeholder="Search users..." id="searchInput">
+            <button class="btn btn-view">Search</button>
+        </div>
+
+        <!-- User Grid -->
+        <h2 class="section-title">All Users</h2>
+        <div class="user-grid">
+            {% for user in users %}
+            <div class="user-card">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <h3 class="user-name">{{ user.username }}</h3>
+                    <div class="user-meta">
+                        <div>Email: {{ user.email }}</div>
+                        <div>Joined: {{ user.date_joined|date:"M d, Y" }}</div>
+                        <div>Status: {% if user.is_active %}Active{% else %}Inactive{% endif %}</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'view_user' user.id %}" class="btn btn-view">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <form method="POST" action="{% url 'toggle_user_status' user.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-suspend">
+                            <i class="fas fa-ban"></i> 
+                            {% if user.is_active %}Suspend{% else %}Activate{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p>No users found.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const userCards = document.querySelectorAll('.user-card');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            userCards.forEach(card => {
+                const username = card.querySelector('.user-name').textContent.toLowerCase();
+                const email = card.querySelector('.user-meta').textContent.toLowerCase();
+                if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

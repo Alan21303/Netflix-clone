@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .movie-card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .movie-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 1rem;
+        }
+
+        .movie-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-meta {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-description {
+            font-size: 0.9rem;
+            color: #ddd;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-edit {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Movies Dashboard</h1>
+
+        <!-- All Movies Grid -->
+        <h2 class="section-title">All Movies</h2>
+        <div class="movie-grid" id="movieGrid">
+            <!-- Movie cards will be rendered here dynamically -->
+            {% for movie in movies %}
+                <div class="movie-card">
+                    <img src="{{ movie.image_card }}" alt="{{ movie.title }}" class="movie-image">
+                    <div class="movie-info">
+                        <h3 class="movie-title">{{ movie.title }}</h3>
+                        <div class="movie-meta">
+                            {{ movie.genre }} | {{ movie.length }} min | {{ movie.release_date|date:"Y" }}
+                        </div>
+                        <p class="movie-description">
+                            {{ movie.description|truncatewords:20 }}
+                        </p>
+                        <div class="action-buttons">
+                            <button class="btn btn-edit" onclick="editMovie({{ movie.id }})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-delete" onclick="deleteMovie({{ movie.id }})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No movies available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Example of dynamically rendering movies using an API endpoint
+        async function fetchMovies() {
+            const response = await fetch('/api/get-movies'); // Update with your API endpoint
+            const movies = await response.json();
+
+            const movieGrid = document.getElementById('movieGrid');
+            movieGrid.innerHTML = '';
+
+            movies.forEach(movie => {
+                movieGrid.innerHTML += `
+                    <div class="movie-card">
+                        <img src="${movie.image_card}" alt="${movie.title}" class="movie-image">
+                        <div class="movie-info">
+                            <h3 class="movie-title">${movie.title}</h3>
+                            <div class="movie-meta">
+                                ${movie.genre} | ${movie.length} min | ${new Date(movie.release_date).getFullYear()}
+                            </div>
+                            <p class="movie-description">${movie.description}</p>
+                            <div class="action-buttons">
+                                <button class="btn btn-edit" onclick="editMovie(${movie.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-delete" onclick="deleteMovie(${movie.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Uncomment the following line to fetch movies on page load
+        // fetchMovies();
+
+        function editMovie(movieId) {
+            alert('Edit functionality for movie ID: ' + movieId);
+        }
+
+        function deleteMovie(movieId) {
+            if (confirm('Are you sure you want to delete this movie?')) {
+                alert('Delete functionality for movie ID: ' + movieId);
+            }
+        }
+    </script>
+</body>
+</html>
